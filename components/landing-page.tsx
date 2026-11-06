@@ -21,7 +21,9 @@ import { Logo } from "@/components/logo";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 import { RepairForm } from "@/components/repair-form";
 import { Button } from "@/components/ui/button";
-import { testimonials } from "@/lib/testimonials";
+import { joystickTypes, parseYouTubeId } from "@/lib/joysticks";
+import { testimonials as fallbackTestimonials } from "@/lib/testimonials";
+import type { SiteContent, StoredFeedback, StoredVideo } from "@/lib/sanity";
 
 // Swap this number (1-6) to change the feedback card design site-wide.
 const FEEDBACK_CARD_VARIANT: FeedbackCardVariant = 3;
@@ -39,29 +41,6 @@ const controllerFamilies = [
   },
 ];
 
-// Each videoId is the ID from a YouTube URL — for
-// https://www.youtube.com/watch?v=dQw4w9WgXcQ that is "dQw4w9WgXcQ".
-// Until one is filled in, that card shows a "video coming soon" block.
-const joystickTypes = [
-  {
-    name: "Traditional",
-    tag: "Stock",
-    copy: "The module almost every controller ships with. A contact arm scrapes across a carbon track to measure movement, and that track slowly wears away. This is where stick drift comes from.",
-    videoId: "",
-  },
-  {
-    name: "Hall Effect",
-    tag: "Upgrade",
-    copy: "Measures a magnet instead of touching anything. With no contact there is no surface left to wear out, so these modules hold their accuracy for years rather than months.",
-    videoId: "",
-  },
-  {
-    name: "TMR",
-    tag: "Newest",
-    copy: "The latest magnetic sensor. Contactless like Hall Effect, but more sensitive and lighter on battery, so small stick movements register more precisely.",
-    videoId: "",
-  },
-];
 
 // Add an image path (e.g. "/gallery/xbox-series.jpg") to replace a placeholder.
 const gallery: { label: string; image?: string }[] = [
@@ -116,7 +95,102 @@ function SectionTitle({
   );
 }
 
-export function LandingPage() {
+function CategoryVideos({
+  videos,
+  title,
+}: {
+  videos: StoredVideo[];
+  title: string;
+}) {
+  if (videos.length === 0) {
+    return <YouTubeEmbed title={title} />;
+  }
+
+  const [first, ...rest] = videos;
+  const youtubeId = parseYouTubeId(first.url);
+
+  return (
+    <div>
+      {youtubeId ? (
+        <YouTubeEmbed videoId={youtubeId} title={first.title || title} />
+      ) : (
+        <a
+          href={first.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-[1.75rem] border border-[#d8d9d3] bg-[#101109] px-6 text-center text-white"
+        >
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/50">
+            Watch
+          </span>
+          <span className="font-display text-lg font-semibold">
+            {first.title || "Video"}
+          </span>
+        </a>
+      )}
+      {rest.length > 0 ? (
+        <ul className="mt-3 space-y-1.5">
+          {rest.map((video) => (
+            <li key={video.id}>
+              <a
+                href={video.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-semibold text-[#3d4fd4] underline underline-offset-2"
+              >
+                {video.title || video.url}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+function CategoryFeedback({ items }: { items: StoredFeedback[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <ul className="mt-5 space-y-3">
+      {items.map((item) => (
+        <li key={item.id} className="rounded-2xl bg-[#f3f3ef] p-4">
+          {item.images.length > 0 ? (
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              {item.images.slice(0, 4).map((src) => (
+                <div
+                  key={src}
+                  className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#e4e5df]"
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="200px"
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <p className="text-sm leading-6 text-[#3c3e39]">“{item.quote}”</p>
+          <p className="mt-2 text-xs font-bold">
+            {item.name}
+            {item.repair ? (
+              <span className="font-medium text-[#83857e]"> · {item.repair}</span>
+            ) : null}
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function LandingPage({
+  content = { feedback: [], videos: [] },
+}: {
+  content?: SiteContent;
+} = {}) {
   return (
     <main className="overflow-hidden">
       <header className="absolute inset-x-0 top-0 z-50">
@@ -332,13 +406,16 @@ export function LandingPage() {
             copy="Every controller uses one of these three modules. The difference is what happens inside when you move the stick."
           />
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {joystickTypes.map(({ name, tag, copy, videoId }, index) => (
+            {joystickTypes.map(({ key, name, tag, copy }, index) => (
               <motion.article
-                key={name}
+                key={key}
                 {...fadeUp}
                 transition={{ duration: 0.45, delay: index * 0.07 }}
               >
-                <YouTubeEmbed videoId={videoId} title={`${name} joysticks`} />
+                <CategoryVideos
+                  videos={content.videos.filter((video) => video.category === key)}
+                  title={`${name} joysticks`}
+                />
                 <div className="mt-5 flex items-center gap-3">
                   <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
                     {name}
@@ -348,6 +425,9 @@ export function LandingPage() {
                   </span>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-[#686b64]">{copy}</p>
+                <CategoryFeedback
+                  items={content.feedback.filter((item) => item.category === key)}
+                />
               </motion.article>
             ))}
           </div>
@@ -445,7 +525,7 @@ export function LandingPage() {
           />
         </div>
         <FeedbackCarousel
-          items={testimonials}
+          items={fallbackTestimonials}
           label="Customer feedback"
           autoAdvanceMs={5000}
           className="mt-12"

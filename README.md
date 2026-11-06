@@ -13,12 +13,8 @@ npm run dev
 
 ## Environment variables
 
-```bash
-RESEND_API_KEY=your_resend_key          # required, sends the repair requests
-NEXT_PUBLIC_SITE_URL=https://...        # optional, your live domain for SEO links
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=...      # optional, shows the spam check widget
-TURNSTILE_SECRET_KEY=...                # optional, verifies it server-side
-```
+Copy `.env.example` and fill in the values you use. The repair form needs
+`RESEND_API_KEY`. The admin page needs the Sanity values below.
 
 ## Spam protection
 
@@ -39,12 +35,28 @@ the customer. Both addresses live as `DEFAULT_RECIPIENT` and `DEFAULT_SENDER` at
 the top of `app/api/repair-request/route.ts`; the sender domain has to stay
 verified in Resend.
 
-## Adding the joystick videos
+## Admin page
 
-Fill in `videoId` for each entry of the `joystickTypes` array in
-`components/landing-page.tsx`. The ID is the part of the YouTube URL after
-`v=` — for `https://www.youtube.com/watch?v=dQw4w9WgXcQ` that is
-`dQw4w9WgXcQ`. Any card left blank shows a "Video coming soon" block.
+Open `/admin` directly. There is no link to it on the site. The password is
+the `ADMIN_PASSWORD` environment variable, and it is `admin` until you set one.
+The session is an HTTP-only cookie.
+
+From that page you can publish, edit, and delete customer feedback (text plus
+photos) and video links for Traditional, Hall Effect, and TMR. Content is
+stored in Sanity and shows up under the matching card in “Three kinds of
+joystick.” A card with nothing uploaded keeps its “Video coming soon” block.
+
+### Connecting Sanity
+
+1. Create a project at [sanity.io/manage](https://www.sanity.io/manage) and copy
+   its project ID into `NEXT_PUBLIC_SANITY_PROJECT_ID`.
+2. Create an API token with Editor permissions and put it in `SANITY_API_TOKEN`.
+   This token is only read on the server.
+3. In the Sanity project, add the document types from `sanity/schemaTypes`
+   (`testimonial` and `joystickVideo`) so the studio shows the same fields the
+   site writes. The site can save content through the API either way.
+4. Redeploy after setting the variables. `NEXT_PUBLIC_SANITY_PROJECT_ID` is
+   baked in at build time.
 
 ## Adding your own photos
 
