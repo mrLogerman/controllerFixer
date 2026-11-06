@@ -1,10 +1,5 @@
-const categories = [
-  { title: "Traditional", value: "traditional" },
-  { title: "Hall Effect", value: "hallEffect" },
-  { title: "TMR", value: "tmr" },
-];
-
-// Customer feedback. The creation date is Sanity's built-in _createdAt.
+// Customer feedback, kept separate from the joystick types. The creation date
+// is Sanity's built-in _createdAt.
 export const testimonial = {
   name: "testimonial",
   title: "Customer feedback",
@@ -25,13 +20,6 @@ export const testimonial = {
     },
     { name: "repair", title: "Repair", type: "string" },
     {
-      name: "category",
-      title: "Joystick type",
-      type: "string",
-      options: { list: categories, layout: "radio" },
-      validation: (rule: { required: () => unknown }) => rule.required(),
-    },
-    {
       name: "images",
       title: "Photos",
       type: "array",
@@ -39,6 +27,6 @@ export const testimonial = {
     },
   ],
   preview: {
-    select: { title: "name", subtitle: "category", media: "images.0" },
+    select: { title: "name", subtitle: "repair", media: "images.0" },
   },
 };

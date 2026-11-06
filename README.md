@@ -41,10 +41,10 @@ Open `/admin` directly. There is no link to it on the site. The password is
 the `ADMIN_PASSWORD` environment variable, and it is `admin` until you set one.
 The session is an HTTP-only cookie.
 
-From that page you can publish, edit, and delete customer feedback (text plus
-photos) and video links for Traditional, Hall Effect, and TMR. Content is
-stored in Sanity and shows up under the matching card in “Three kinds of
-joystick.” A card with nothing uploaded keeps its “Video coming soon” block.
+Feedback is one form: a quote, a name, and photos. It is not tied to a joystick
+type, and published entries replace the sample quotes in the feedback carousel.
+Video links stay on Traditional, Hall Effect, and TMR, and show on the matching
+card. A joystick with no video keeps its “Video coming soon” block.
 
 ### Connecting Sanity
 

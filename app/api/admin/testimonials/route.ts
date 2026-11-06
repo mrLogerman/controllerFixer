@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSanity, requireSignIn } from "@/lib/admin-api";
-import { joystickTypes } from "@/lib/joysticks";
 import { writeClient } from "@/lib/sanity";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -13,13 +12,6 @@ const fields = z.object({
   quote: z.string().trim().min(10, "Feedback needs at least 10 characters").max(800),
   name: z.string().trim().min(2, "Add the customer's name").max(60),
   repair: z.string().trim().max(80).optional(),
-  category: z.enum(
-    joystickTypes.map((type) => type.key) as [
-      "traditional",
-      "hallEffect",
-      "tmr",
-    ],
-  ),
 });
 
 type ImageAsset = {
@@ -70,7 +62,6 @@ function readFields(form: FormData) {
     quote: form.get("quote"),
     name: form.get("name"),
     repair: form.get("repair") || undefined,
-    category: form.get("category"),
   });
 }
 
@@ -154,6 +145,7 @@ export async function PATCH(request: Request) {
           ? { images: uploaded.images }
           : {}),
       })
+      .unset(["category"])
       .commit();
 
     revalidatePath("/");

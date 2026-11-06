@@ -96,12 +96,10 @@ function PhotoPicker({ existing }: { existing?: string[] }) {
 }
 
 function FeedbackEditor({
-  category,
   editing,
   onDone,
   onCancel,
 }: {
-  category: JoystickKey;
   editing: StoredFeedback | null;
   onDone: () => void;
   onCancel: () => void;
@@ -141,7 +139,6 @@ function FeedbackEditor({
 
   return (
     <form onSubmit={onSubmit} className="rounded-3xl bg-[#f7f7f4] p-5">
-      <input type="hidden" name="category" value={category} />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
           <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#5f615b]">
@@ -305,32 +302,26 @@ function VideoEditor({
   );
 }
 
-function CategoryPanel({
-  category,
-  name,
+function FeedbackPanel({
   feedback,
-  videos,
   onChange,
 }: {
-  category: JoystickKey;
-  name: string;
   feedback: StoredFeedback[];
-  videos: StoredVideo[];
   onChange: () => void;
 }) {
-  const [editingFeedback, setEditingFeedback] = useState<StoredFeedback | null>(null);
-  const [editingVideo, setEditingVideo] = useState<StoredVideo | null>(null);
+  const [editing, setEditing] = useState<StoredFeedback | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(null);
-  const feedbackKey = useRef(0);
-  const [feedbackForm, setFeedbackForm] = useState(0);
+  const formKey = useRef(0);
+  const [formVersion, setFormVersion] = useState(0);
 
-  async function remove(path: string, id: string) {
+  async function remove(id: string) {
     setPending(id);
     setStatus(null);
-    const response = await fetch(`${path}?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
+    const response = await fetch(
+      `/api/admin/testimonials?id=${encodeURIComponent(id)}`,
+      { method: "DELETE" },
+    );
     setPending(null);
     if (!response.ok) {
       const result = (await response.json().catch(() => null)) as {
@@ -345,31 +336,28 @@ function CategoryPanel({
   return (
     <section className="mt-6 rounded-[2rem] bg-white p-5 sm:p-7">
       <h2 className="font-display text-2xl font-semibold tracking-[-0.03em]">
-        {name}
-      </h2>
-
-      <h3 className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-[#6e706a]">
         Customer feedback
-      </h3>
-      <div className="mt-3">
+      </h2>
+      <p className="mt-1 text-sm text-[#73756f]">
+        Photos and a short quote. These are not tied to a joystick type.
+      </p>
+      <div className="mt-5">
         <FeedbackEditor
-          key={`${feedbackForm}-${editingFeedback?.id ?? "new"}`}
-          category={category}
-          editing={editingFeedback}
-          onCancel={() => setEditingFeedback(null)}
+          key={`${formVersion}-${editing?.id ?? "new"}`}
+          editing={editing}
+          onCancel={() => setEditing(null)}
           onDone={() => {
-            setEditingFeedback(null);
-            feedbackKey.current += 1;
-            setFeedbackForm(feedbackKey.current);
+            setEditing(null);
+            formKey.current += 1;
+            setFormVersion(formKey.current);
             onChange();
           }}
         />
       </div>
-
       {feedback.length === 0 ? (
-        <p className="mt-4 text-sm text-[#73756f]">No feedback for {name} yet.</p>
+        <p className="mt-4 text-sm text-[#73756f]">No feedback published yet.</p>
       ) : (
-        <ul className="mt-4 grid gap-3">
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
           {feedback.map((item) => (
             <li
               key={item.id}
@@ -407,7 +395,7 @@ function CategoryPanel({
                 <button
                   type="button"
                   aria-label={`Edit feedback from ${item.name}`}
-                  onClick={() => setEditingFeedback(item)}
+                  onClick={() => setEditing(item)}
                   className="h-fit rounded-full p-2 text-[#9a9c95] hover:bg-[#f3f3ef] hover:text-[#11120f]"
                 >
                   <Pencil className="size-4" />
@@ -416,7 +404,7 @@ function CategoryPanel({
                   type="button"
                   aria-label={`Delete feedback from ${item.name}`}
                   disabled={pending === item.id}
-                  onClick={() => remove("/api/admin/testimonials", item.id)}
+                  onClick={() => remove(item.id)}
                   className="h-fit rounded-full p-2 text-[#9a9c95] hover:bg-red-50 hover:text-red-600"
                 >
                   {pending === item.id ? (
@@ -430,8 +418,49 @@ function CategoryPanel({
           ))}
         </ul>
       )}
+      <Banner status={status} />
+    </section>
+  );
+}
 
-      <h3 className="mt-8 text-xs font-bold uppercase tracking-[0.12em] text-[#6e706a]">
+function CategoryPanel({
+  category,
+  name,
+  videos,
+  onChange,
+}: {
+  category: JoystickKey;
+  name: string;
+  videos: StoredVideo[];
+  onChange: () => void;
+}) {
+  const [editingVideo, setEditingVideo] = useState<StoredVideo | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>(null);
+
+  async function remove(path: string, id: string) {
+    setPending(id);
+    setStatus(null);
+    const response = await fetch(`${path}?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    setPending(null);
+    if (!response.ok) {
+      const result = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      setStatus({ tone: "error", message: result?.error ?? "Could not delete." });
+      return;
+    }
+    onChange();
+  }
+
+  return (
+    <section className="mt-6 rounded-[2rem] bg-white p-5 sm:p-7">
+      <h2 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+        {name}
+      </h2>
+      <h3 className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-[#6e706a]">
         Videos
       </h3>
       <div className="mt-3">
@@ -525,7 +554,7 @@ export function AdminDashboard({
                 Site content
               </h1>
               <p className="text-xs text-[#73756f]">
-                Feedback and videos, one section per joystick type.
+                Feedback on its own. Videos stay with each joystick type.
               </p>
             </div>
           </div>
@@ -544,12 +573,16 @@ export function AdminDashboard({
           </p>
         ) : null}
 
+        <FeedbackPanel
+          feedback={content.feedback}
+          onChange={() => router.refresh()}
+        />
+
         {joystickTypes.map((type) => (
           <CategoryPanel
             key={type.key}
             category={type.key}
             name={type.name}
-            feedback={content.feedback.filter((item) => item.category === type.key)}
             videos={content.videos.filter((item) => item.category === type.key)}
             onChange={() => router.refresh()}
           />

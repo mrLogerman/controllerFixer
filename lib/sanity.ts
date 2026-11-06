@@ -46,7 +46,6 @@ export type StoredFeedback = {
   quote: string;
   name: string;
   repair?: string;
-  category: JoystickKey;
   images: string[];
   createdAt: string;
 };
@@ -79,12 +78,11 @@ export async function fetchSiteContent(): Promise<SiteContent> {
     videos: StoredVideo[];
   }>(
     `{
-      "feedback": *[_type == "testimonial" && defined(category)] | order(_createdAt desc) {
+      "feedback": *[_type == "testimonial"] | order(_createdAt desc) {
         "id": _id,
         quote,
         name,
         repair,
-        category,
         "createdAt": _createdAt,
         "images": images[].asset->url
       },
@@ -102,7 +100,7 @@ export async function fetchSiteContent(): Promise<SiteContent> {
 
   return {
     feedback: (data?.feedback ?? [])
-      .filter((row) => row.quote && row.name && isJoystickKey(row.category))
+      .filter((row) => row.quote && row.name)
       .map((row) => ({
         ...row,
         repair: row.repair || undefined,

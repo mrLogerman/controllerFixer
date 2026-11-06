@@ -23,7 +23,7 @@ import { RepairForm } from "@/components/repair-form";
 import { Button } from "@/components/ui/button";
 import { joystickTypes, parseYouTubeId } from "@/lib/joysticks";
 import { testimonials as fallbackTestimonials } from "@/lib/testimonials";
-import type { SiteContent, StoredFeedback, StoredVideo } from "@/lib/sanity";
+import type { SiteContent, StoredVideo } from "@/lib/sanity";
 
 // Swap this number (1-6) to change the feedback card design site-wide.
 const FEEDBACK_CARD_VARIANT: FeedbackCardVariant = 3;
@@ -148,49 +148,21 @@ function CategoryVideos({
   );
 }
 
-function CategoryFeedback({ items }: { items: StoredFeedback[] }) {
-  if (items.length === 0) return null;
-
-  return (
-    <ul className="mt-5 space-y-3">
-      {items.map((item) => (
-        <li key={item.id} className="rounded-2xl bg-[#f3f3ef] p-4">
-          {item.images.length > 0 ? (
-            <div className="mb-3 grid grid-cols-2 gap-2">
-              {item.images.slice(0, 4).map((src) => (
-                <div
-                  key={src}
-                  className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#e4e5df]"
-                >
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    sizes="200px"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : null}
-          <p className="text-sm leading-6 text-[#3c3e39]">“{item.quote}”</p>
-          <p className="mt-2 text-xs font-bold">
-            {item.name}
-            {item.repair ? (
-              <span className="font-medium text-[#83857e]"> · {item.repair}</span>
-            ) : null}
-          </p>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function LandingPage({
   content = { feedback: [], videos: [] },
 }: {
   content?: SiteContent;
 } = {}) {
+  const feedbackItems =
+    content.feedback.length > 0
+      ? content.feedback.map((item) => ({
+          quote: item.quote,
+          name: item.name,
+          repair: item.repair ?? "",
+          image: item.images[0],
+        }))
+      : fallbackTestimonials;
+
   return (
     <main className="overflow-hidden">
       <header className="absolute inset-x-0 top-0 z-50">
@@ -425,9 +397,6 @@ export function LandingPage({
                   </span>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-[#686b64]">{copy}</p>
-                <CategoryFeedback
-                  items={content.feedback.filter((item) => item.category === key)}
-                />
               </motion.article>
             ))}
           </div>
@@ -525,7 +494,7 @@ export function LandingPage({
           />
         </div>
         <FeedbackCarousel
-          items={fallbackTestimonials}
+          items={feedbackItems}
           label="Customer feedback"
           autoAdvanceMs={5000}
           className="mt-12"
