@@ -184,8 +184,8 @@ export function LandingPage() {
               Vancouver · Same-day service
             </div>
             <p className="mt-4 max-w-xl text-base leading-7 text-white/60">
-              Same-day fix for Xbox and PS5 controllers. $25 for one joystick,
-              $40 for a pair.
+              Same-day fix for Xbox and PS5 controllers. Hall Effect joysticks
+              for $30, TMR for $45.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -224,10 +224,10 @@ export function LandingPage() {
             <div className="flex w-full items-center justify-between gap-4 border-t border-black/15 pt-5">
               <div>
                 <p className="font-display text-3xl font-bold tracking-[-0.05em]">
-                  FROM $25
+                  FROM $30
                 </p>
                 <p className="mt-1 text-xs font-semibold opacity-55">
-                  One joystick, or $40 a pair
+                  Hall Effect $30 · TMR $45
                 </p>
               </div>
               <ShieldCheck className="size-9" />
@@ -367,8 +367,9 @@ export function LandingPage() {
               Choose your pill.
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/55">
-              Drift usually starts in one stick. Replace just that one, or do
-              both in the same visit and forget about it.
+              Both are contactless magnetic modules, so neither one wears out
+              the way a stock stick does. Take the proven upgrade, or the newest
+              and most precise sensor.
             </p>
           </div>
 
@@ -385,14 +386,14 @@ export function LandingPage() {
                 <div className="mt-6 flex items-end justify-between gap-4">
                   <div className="min-w-0">
                     <h3 className="font-display text-3xl font-semibold tracking-[-0.04em]">
-                      One joystick
+                      Hall Effect
                     </h3>
                     <p className="mt-2 text-sm text-white/55">
-                      Fix the stick that drifts
+                      The proven fix for stick drift
                     </p>
                   </div>
                   <p className="font-display shrink-0 text-5xl font-semibold leading-none tracking-[-0.06em] text-[#ff7175] sm:text-6xl">
-                    $25
+                    $30
                   </p>
                 </div>
               </div>
@@ -411,14 +412,14 @@ export function LandingPage() {
                 <div className="mt-6 flex items-end justify-between gap-4">
                   <div className="min-w-0">
                     <h3 className="font-display text-3xl font-semibold tracking-[-0.04em]">
-                      A pair
+                      TMR
                     </h3>
                     <p className="mt-2 text-sm text-white/55">
-                      Change both sticks in one visit
+                      Newest sensor, highest precision
                     </p>
                   </div>
                   <p className="font-display shrink-0 text-5xl font-semibold leading-none tracking-[-0.06em] text-[#8da0ff] sm:text-6xl">
-                    $40
+                    $45
                   </p>
                 </div>
               </div>
