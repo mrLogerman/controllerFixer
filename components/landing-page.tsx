@@ -7,23 +7,50 @@ import {
   Gamepad2,
   MapPin,
   Menu,
-  Play,
   ShieldCheck,
   Truck,
-  X,
 } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import {
   FeedbackCard,
   type FeedbackCardVariant,
 } from "@/components/feedback-card";
 import { FeedbackCarousel } from "@/components/feedback-carousel";
+import { Logo } from "@/components/logo";
+import { YouTubeEmbed } from "@/components/youtube-embed";
 import { RepairForm } from "@/components/repair-form";
 import { Button } from "@/components/ui/button";
-import { testimonials } from "@/lib/testimonials";
+import { joystickTypes, parseYouTubeId } from "@/lib/joysticks";
+import { testimonials as fallbackTestimonials } from "@/lib/testimonials";
+import type { SiteContent, StoredVideo } from "@/lib/sanity";
 
 // Swap this number (1-6) to change the feedback card design site-wide.
 const FEEDBACK_CARD_VARIANT: FeedbackCardVariant = 3;
+
+const controllerFamilies = [
+  {
+    label: "Xbox",
+    models: ["Series X|S", "Xbox One", "Elite Series 1 & 2"],
+    dark: false,
+  },
+  {
+    label: "PlayStation 5",
+    models: ["DualSense", "DualSense Edge"],
+    dark: true,
+  },
+];
+
+
+// Add an image path (e.g. "/gallery/xbox-series.jpg") to replace a placeholder.
+const gallery: { label: string; image?: string }[] = [
+  { label: "Xbox Series repair" },
+  { label: "DualSense upgrade" },
+  { label: "Elite controller fix" },
+  { label: "Hall Effect install" },
+  { label: "Joystick calibration" },
+  { label: "PS5 stick repair" },
+];
 
 const fadeUp = {
   initial: { opacity: 0, y: 22 },
@@ -68,149 +95,90 @@ function SectionTitle({
   );
 }
 
-function ControllerVisual({
-  platform,
-  accent,
+function CategoryVideos({
+  videos,
+  title,
 }: {
-  platform: "xbox" | "ps5";
-  accent: string;
+  videos: StoredVideo[];
+  title: string;
 }) {
+  if (videos.length === 0) {
+    return <YouTubeEmbed title={title} />;
+  }
+
+  const [first, ...rest] = videos;
+  const youtubeId = parseYouTubeId(first.url);
+
   return (
-    <div className="controller-orbit relative flex aspect-[5/4] items-center justify-center overflow-hidden rounded-[2rem] bg-[#11120f] grid-noise">
-      <div
-        className="absolute left-[13%] top-[12%] size-36 rounded-full opacity-25 blur-3xl"
-        style={{ background: accent }}
-      />
-      <motion.div
-        initial={{ rotate: -7, scale: 0.9 }}
-        whileInView={{ rotate: 3, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ type: "spring", stiffness: 90, damping: 15 }}
-        className="relative z-10"
-      >
-        <Gamepad2
-          aria-hidden
-          strokeWidth={1.15}
-          className="h-40 w-56 text-white sm:h-52 sm:w-72"
-        />
-        <span
-          className="absolute left-[33%] top-[42%] size-4 rounded-full shadow-[0_0_22px_currentColor]"
-          style={{ color: accent, background: accent }}
-        />
-        <span
-          className="absolute right-[27%] top-[36%] size-3 rounded-full"
-          style={{ background: platform === "xbox" ? "#b6ff2e" : "#7c5cff" }}
-        />
-      </motion.div>
-      <div className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.13em] text-white/65 backdrop-blur-sm">
-        <span
-          className="size-1.5 rounded-full shadow-[0_0_10px_currentColor]"
-          style={{ color: accent, background: accent }}
-        />
-        Bench tested
-      </div>
+    <div>
+      {youtubeId ? (
+        <YouTubeEmbed videoId={youtubeId} title={first.title || title} />
+      ) : (
+        <a
+          href={first.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-[1.75rem] border border-[#d8d9d3] bg-[#101109] px-6 text-center text-white"
+        >
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/50">
+            Watch
+          </span>
+          <span className="font-display text-lg font-semibold">
+            {first.title || "Video"}
+          </span>
+        </a>
+      )}
+      {rest.length > 0 ? (
+        <ul className="mt-3 space-y-1.5">
+          {rest.map((video) => (
+            <li key={video.id}>
+              <a
+                href={video.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-semibold text-[#3d4fd4] underline underline-offset-2"
+              >
+                {video.title || video.url}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
 
-function PlatformSection({
-  id,
-  platform,
-  title,
-  copy,
-  services,
-  reverse = false,
+export function LandingPage({
+  content = { feedback: [], videos: [] },
 }: {
-  id: string;
-  platform: "xbox" | "ps5";
-  title: string;
-  copy: string;
-  services: string[];
-  reverse?: boolean;
-}) {
-  const isXbox = platform === "xbox";
-  const accent = platform === "xbox" ? "#b6ff2e" : "#7c5cff";
+  content?: SiteContent;
+} = {}) {
+  const feedbackItems =
+    content.feedback.length > 0
+      ? content.feedback.map((item) => ({
+          quote: item.quote,
+          name: item.name,
+          repair: item.repair ?? "",
+          image: item.images[0],
+        }))
+      : fallbackTestimonials;
 
-  return (
-    <section
-      id={id}
-      className={`scroll-mt-20 ${
-        isXbox ? "bg-[#e7f6da] py-14 sm:py-20" : "py-12 sm:py-16"
-      }`}
-    >
-      <div
-        className={`page-shell grid items-center gap-10 lg:grid-cols-2 ${
-          isXbox
-            ? "lg:gap-20"
-            : "rounded-[2.5rem] bg-[#7256ec] p-6 text-white sm:p-10 lg:gap-14 lg:p-14"
-        } ${
-          reverse ? "lg:[&>*:first-child]:order-2" : ""
-        }`}
-      >
-        <ControllerVisual platform={platform} accent={accent} />
-        <motion.div {...fadeUp}>
-          <span className={`eyebrow ${isXbox ? "" : "text-white/60"}`}>
-            {platform === "xbox" ? "Xbox repair" : "PlayStation 5 repair"}
-          </span>
-          <h2 className="font-display mt-4 text-4xl font-semibold leading-[1.04] tracking-[-0.04em] sm:text-5xl">
-            {title}
-          </h2>
-          <p
-            className={`mt-5 max-w-xl text-base leading-7 ${
-              isXbox ? "text-[#5e6259]" : "text-white/65"
-            }`}
-          >
-            {copy}
-          </p>
-          <ul className="mt-7 grid gap-3 sm:grid-cols-2">
-            {services.map((service) => (
-              <li
-                key={service}
-                className="flex items-center gap-2.5 text-sm font-semibold"
-              >
-                <span
-                  className={`flex size-6 items-center justify-center rounded-full ${
-                    isXbox ? "bg-[#b6ff2e]" : "bg-white text-[#7256ec]"
-                  }`}
-                >
-                  <Check className="size-3.5" strokeWidth={3} />
-                </span>
-                {service}
-              </li>
-            ))}
-          </ul>
-          <Button asChild variant={isXbox ? "dark" : "default"} className="mt-8">
-            <a href="#contact">
-              Repair my {platform === "xbox" ? "Xbox" : "PS5"} controller
-              <ArrowRight className="size-4" />
-            </a>
-          </Button>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-export function LandingPage() {
   return (
     <main className="overflow-hidden">
       <header className="absolute inset-x-0 top-0 z-50">
         <div className="page-shell flex h-20 items-center justify-between border-b border-white/10 text-white">
-          <a href="#" className="font-display flex items-center gap-2 text-lg font-bold">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[#b6ff2e] text-[#11120f]">
-              <Gamepad2 className="size-5" />
-            </span>
-            STICK<span className="text-[#b6ff2e]">LAB</span>
+          <a href="#" aria-label="Vancouver Controller Repair — home">
+            <Logo tone="light" />
           </a>
           <nav
             aria-label="Main navigation"
             className="hidden items-center gap-7 text-sm font-semibold text-white/70 md:flex"
           >
-            <a className="transition-colors hover:text-white" href="#xbox">
-              Xbox Repair
+            <a className="transition-colors hover:text-white" href="#controllers">
+              Controllers
             </a>
-            <a className="transition-colors hover:text-white" href="#ps5">
-              PS5 Repair
+            <a className="transition-colors hover:text-white" href="#joysticks">
+              Joystick Types
             </a>
             <a className="transition-colors hover:text-white" href="#choose">
               Repair Options
@@ -262,8 +230,8 @@ export function LandingPage() {
               Vancouver · Same-day service
             </div>
             <p className="mt-4 max-w-xl text-base leading-7 text-white/60">
-              Same-day fix for Xbox and PS5 controllers. Repair your current
-              joystick for $25 or upgrade to Hall Effect for $40.
+              Same-day fix for Xbox and PS5 controllers. Hall Effect joysticks
+              for $30, TMR for $45.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -302,10 +270,10 @@ export function LandingPage() {
             <div className="flex w-full items-center justify-between gap-4 border-t border-black/15 pt-5">
               <div>
                 <p className="font-display text-3xl font-bold tracking-[-0.05em]">
-                  FROM $25
+                  FROM $30
                 </p>
                 <p className="mt-1 text-xs font-semibold opacity-55">
-                  Repair or Hall Effect upgrade
+                  Hall Effect $30 · TMR $45
                 </p>
               </div>
               <ShieldCheck className="size-9" />
@@ -332,32 +300,54 @@ export function LandingPage() {
         </div>
       </section>
 
-      <PlatformSection
-        id="xbox"
-        platform="xbox"
-        title="Your Xbox controller, dialed in."
-        copy="From everyday Series controllers to Elite models, we diagnose the fault, replace only what’s needed, and calibrate every input before it leaves our bench."
-        services={[
-          "Series X|S controllers",
-          "Xbox One controllers",
-          "Elite Series 1 & 2",
-          "Hall Effect upgrades",
-        ]}
-      />
-
-      <PlatformSection
-        id="ps5"
-        platform="ps5"
-        title="DualSense, without the dead zones."
-        copy="Keep the haptics and feel you love. We fix drift, charging issues, buttons, and triggers on DualSense and DualSense Edge controllers."
-        services={[
-          "DualSense controllers",
-          "DualSense Edge",
-          "Adaptive triggers",
-          "USB-C charging",
-        ]}
-        reverse
-      />
+      <section id="controllers" className="scroll-mt-20 py-16 sm:py-20">
+        <div className="page-shell">
+          <SectionTitle
+            eyebrow="Controllers we fix"
+            title="Xbox and PlayStation, same bench."
+            copy="Drift, buttons, triggers, charging ports — we find the fault, replace only what needs replacing, and calibrate every input before it goes back in your hands."
+          />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {controllerFamilies.map(({ label, models, dark }, index) => (
+              <motion.div
+                key={label}
+                {...fadeUp}
+                transition={{ duration: 0.45, delay: index * 0.06 }}
+                className={`rounded-[2rem] p-7 sm:p-8 ${
+                  dark ? "bg-[#7256ec] text-white" : "bg-[#e7f6da]"
+                }`}
+              >
+                <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+                  {label}
+                </h3>
+                <ul className="mt-5 flex flex-wrap gap-2">
+                  {models.map((model) => (
+                    <li
+                      key={model}
+                      className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${
+                        dark ? "bg-white/15" : "bg-white"
+                      }`}
+                    >
+                      <Check
+                        className={`size-3.5 ${dark ? "" : "text-[#55893a]"}`}
+                        strokeWidth={3}
+                      />
+                      {model}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div {...fadeUp} className="mt-8">
+            <Button asChild variant="dark">
+              <a href="#contact">
+                Book a repair <ArrowRight className="size-4" />
+              </a>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
 
       <section className="overflow-hidden border-y border-[#d9dad4] bg-[#b6ff2e] py-7">
         <p className="sr-only">
@@ -380,6 +370,39 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section id="joysticks" className="scroll-mt-20 py-16 sm:py-20">
+        <div className="page-shell">
+          <SectionTitle
+            eyebrow="The technology"
+            title="Three kinds of joystick."
+            copy="Every controller uses one of these three modules. The difference is what happens inside when you move the stick."
+          />
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {joystickTypes.map(({ key, name, tag, copy }, index) => (
+              <motion.article
+                key={key}
+                {...fadeUp}
+                transition={{ duration: 0.45, delay: index * 0.07 }}
+              >
+                <CategoryVideos
+                  videos={content.videos.filter((video) => video.category === key)}
+                  title={`${name} joysticks`}
+                />
+                <div className="mt-5 flex items-center gap-3">
+                  <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+                    {name}
+                  </h3>
+                  <span className="rounded-full bg-[#e4e5df] px-2.5 py-1 text-[0.6rem] font-extrabold uppercase tracking-[0.12em] text-[#6c6f67]">
+                    {tag}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#686b64]">{copy}</p>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section
         id="choose"
         className="scroll-mt-20 bg-[#0c0d0b] py-20 text-white"
@@ -393,8 +416,9 @@ export function LandingPage() {
               Choose your pill.
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/55">
-              Keep the original joystick alive for less, or install a magnetic
-              Hall Effect module built to resist future drift.
+              Both are contactless magnetic modules, so neither one wears out
+              the way a stock stick does. Take the proven upgrade, or the newest
+              and most precise sensor.
             </p>
           </div>
 
@@ -403,67 +427,23 @@ export function LandingPage() {
               {...fadeUp}
               className="overflow-hidden rounded-[2rem] border border-[#ff5a5f]/40 bg-[#ff5a5f]/[0.08]"
             >
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#ff5a5f] px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-[0.14em] text-white">
-                      <span className="size-2 rounded-full bg-white" />
-                      Red pill
-                    </span>
-                    <h3 className="font-display mt-5 text-3xl font-semibold tracking-[-0.04em]">
-                      Dirty Cheap Fix
+              <div className="p-7 sm:p-9">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#ff5a5f] px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-[0.14em] text-white">
+                  <span className="size-2 rounded-full bg-white" />
+                  Red pill
+                </span>
+                <div className="mt-6 flex items-end justify-between gap-4">
+                  <div className="min-w-0">
+                    <h3 className="font-display text-3xl font-semibold tracking-[-0.04em]">
+                      Hall Effect
                     </h3>
                     <p className="mt-2 text-sm text-white/55">
-                      Repair the old joystick module
+                      The proven fix for stick drift
                     </p>
                   </div>
-                  <p className="font-display text-6xl font-semibold tracking-[-0.06em] text-[#ff7175]">
-                    $25
+                  <p className="font-display shrink-0 text-5xl font-semibold leading-none tracking-[-0.06em] text-[#ff7175] sm:text-6xl">
+                    $30
                   </p>
-                </div>
-
-                <div className="mt-7 grid gap-6 border-t border-white/10 pt-6 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#82e8a0]">
-                      Benefits
-                    </p>
-                    <ul className="mt-3 space-y-2.5">
-                      {[
-                        "Saves money while bringing the controller back to normal use",
-                      ].map((item) => (
-                          <li key={item} className="flex gap-2 text-sm text-white/75">
-                            <Check className="mt-0.5 size-4 shrink-0 text-[#82e8a0]" />
-                            {item}
-                          </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#ff8589]">
-                      Downsides
-                    </p>
-                    <ul className="mt-3 space-y-2.5">
-                      {[
-                        "Stick drift can come back over time",
-                        "Repeated repairs may eventually cost more",
-                        "It is a repair, not a long-term upgrade",
-                      ].map((item) => (
-                        <li key={item} className="flex gap-2 text-sm text-white/75">
-                          <X className="mt-0.5 size-4 shrink-0 text-[#ff8589]" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="flex aspect-video items-center justify-center border-t border-white/10 bg-black/35">
-                <div className="text-center text-white/45">
-                  <Play className="mx-auto size-9" strokeWidth={1.4} />
-                  <p className="mt-3 text-xs font-bold uppercase tracking-[0.14em]">
-                    Repair explanation video
-                  </p>
-                  <p className="mt-1 text-xs">Your video goes here</p>
                 </div>
               </div>
             </motion.article>
@@ -473,66 +453,23 @@ export function LandingPage() {
               transition={{ duration: 0.5, delay: 0.08 }}
               className="overflow-hidden rounded-[2rem] border border-[#627dff]/45 bg-[#627dff]/[0.1]"
             >
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-[#627dff] px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-[0.14em] text-white">
-                      <span className="size-2 rounded-full bg-white" />
-                      Blue pill
-                    </span>
-                    <h3 className="font-display mt-5 text-3xl font-semibold tracking-[-0.04em]">
-                      Affordable Upgrade
+              <div className="p-7 sm:p-9">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#627dff] px-3 py-1.5 text-[0.65rem] font-extrabold uppercase tracking-[0.14em] text-white">
+                  <span className="size-2 rounded-full bg-white" />
+                  Blue pill
+                </span>
+                <div className="mt-6 flex items-end justify-between gap-4">
+                  <div className="min-w-0">
+                    <h3 className="font-display text-3xl font-semibold tracking-[-0.04em]">
+                      TMR
                     </h3>
                     <p className="mt-2 text-sm text-white/55">
-                      Change to a new Hall Effect module
+                      Newest sensor, highest precision
                     </p>
                   </div>
-                  <p className="font-display text-6xl font-semibold tracking-[-0.06em] text-[#8da0ff]">
-                    $40
+                  <p className="font-display shrink-0 text-5xl font-semibold leading-none tracking-[-0.06em] text-[#8da0ff] sm:text-6xl">
+                    $45
                   </p>
-                </div>
-
-                <div className="mt-7 grid gap-6 border-t border-white/10 pt-6 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#82e8a0]">
-                      Benefits
-                    </p>
-                    <ul className="mt-3 space-y-2.5">
-                      {[
-                        "More reliable for heavy gaming",
-                        "Uses magnetic sensors instead of physical contact",
-                        "Longer lifespan than standard potentiometer joysticks",
-                        "Permanent resistant to stick drift",
-                      ].map((item) => (
-                        <li key={item} className="flex gap-2 text-sm text-white/75">
-                          <Check className="mt-0.5 size-4 shrink-0 text-[#82e8a0]" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#ff8589]">
-                      Downsides
-                    </p>
-                    <ul className="mt-3 space-y-2.5">
-                      {["Costs $15 more"].map((item) => (
-                          <li key={item} className="flex gap-2 text-sm text-white/75">
-                            <X className="mt-0.5 size-4 shrink-0 text-[#ff8589]" />
-                            {item}
-                          </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="flex aspect-video items-center justify-center border-t border-white/10 bg-black/35">
-                <div className="text-center text-white/45">
-                  <Play className="mx-auto size-9" strokeWidth={1.4} />
-                  <p className="mt-3 text-xs font-bold uppercase tracking-[0.14em]">
-                    Upgrade explanation video
-                  </p>
-                  <p className="mt-1 text-xs">Your video goes here</p>
                 </div>
               </div>
             </motion.article>
@@ -557,7 +494,7 @@ export function LandingPage() {
           />
         </div>
         <FeedbackCarousel
-          items={testimonials}
+          items={feedbackItems}
           label="Customer feedback"
           autoAdvanceMs={5000}
           className="mt-12"
@@ -584,27 +521,30 @@ export function LandingPage() {
             </span>
           </div>
           <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3">
-            {[
-              "Xbox Series repair",
-              "DualSense upgrade",
-              "Elite controller fix",
-              "Hall Effect install",
-              "Joystick calibration",
-              "PS5 stick repair",
-            ].map((label, index) => (
+            {gallery.map(({ label, image }, index) => (
               <motion.div
                 key={label}
                 {...fadeUp}
                 transition={{ duration: 0.4, delay: index * 0.04 }}
-                className="flex min-h-32 items-center justify-center overflow-hidden rounded-2xl border border-[#d8d9d3] bg-[#e9eae5] p-4 text-center transition-transform duration-300 hover:scale-[1.025] sm:min-h-44"
+                className="relative flex min-h-32 items-center justify-center overflow-hidden rounded-2xl border border-[#d8d9d3] bg-[#e9eae5] p-4 text-center transition-transform duration-300 hover:scale-[1.025] sm:min-h-44"
               >
-                <div className="text-[#777a73]">
-                  <Camera className="mx-auto size-7" strokeWidth={1.5} />
-                  <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em]">
-                    Photo placeholder
-                  </p>
-                  <p className="mt-1 text-xs">{label}</p>
-                </div>
+                {image ? (
+                  <Image
+                    src={image}
+                    alt={label}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-[#777a73]">
+                    <Camera className="mx-auto size-7" strokeWidth={1.5} />
+                    <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em]">
+                      Photo placeholder
+                    </p>
+                    <p className="mt-1 text-xs">{label}</p>
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
@@ -624,7 +564,7 @@ export function LandingPage() {
             </div>
             <div className="relative min-h-[360px] overflow-hidden bg-[#171815] lg:min-h-full">
               <iframe
-                title="StickLab service area in Vancouver"
+                title="Vancouver Controller Repair service area"
                 src="https://www.openstreetmap.org/export/embed.html?bbox=-123.18%2C49.24%2C-123.04%2C49.30&layer=mapnik&marker=49.2827%2C-123.1207"
                 className="absolute inset-0 h-full w-full border-0 opacity-85 grayscale-[0.25]"
                 loading="lazy"
@@ -654,18 +594,15 @@ export function LandingPage() {
 
       <footer className="border-t border-[#d9dad4]">
         <div className="page-shell flex flex-col gap-7 py-10 sm:flex-row sm:items-center sm:justify-between">
-          <a href="#" className="font-display flex items-center gap-2 text-lg font-bold">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[#171815] text-[#b6ff2e]">
-              <Gamepad2 className="size-5" />
-            </span>
-            STICK<span className="text-[#70736b]">LAB</span>
+          <a href="#" aria-label="Vancouver Controller Repair — home">
+            <Logo />
           </a>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-[#6e706a]">
-            <a className="hover:text-black" href="#xbox">
-              Xbox Repair
+            <a className="hover:text-black" href="#controllers">
+              Controllers
             </a>
-            <a className="hover:text-black" href="#ps5">
-              PS5 Repair
+            <a className="hover:text-black" href="#joysticks">
+              Joystick Types
             </a>
             <a className="hover:text-black" href="#choose">
               Repair Options

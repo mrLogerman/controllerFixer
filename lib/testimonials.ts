@@ -6,7 +6,6 @@ export type Testimonial = {
   image?: string;
 };
 
-// dancing monkeys — customer quotes stay simple, specific, and easy to scan.
 export const testimonials: Testimonial[] = [
   {
     quote:
@@ -22,7 +21,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "I was about to buy another controller. The $40 upgrade saved it and fixed the problem completely.",
+      "I was about to buy another controller. The $30 upgrade saved it and fixed the problem completely.",
     name: "Chris D.",
     repair: "Xbox stick repair",
   },

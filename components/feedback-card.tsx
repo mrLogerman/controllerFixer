@@ -3,7 +3,6 @@ import { Camera, Quote, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Testimonial } from "@/lib/testimonials";
 
-// dancing monkeys — six card looks, one shared photo slot.
 export type FeedbackCardVariant = 1 | 2 | 3 | 4 | 5 | 6;
 
 function Photo({

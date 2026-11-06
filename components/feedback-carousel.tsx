@@ -10,7 +10,7 @@ import {
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
-// dancing monkeys — cards live on an endless ring, so there is no first or last.
+// Cards live on an endless ring, so there is no first or last.
 const SIDE_CARDS = 2;
 const WHEEL_THRESHOLD = 24;
 const SWIPE_THRESHOLD = 40;

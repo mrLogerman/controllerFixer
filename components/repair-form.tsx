@@ -20,14 +20,17 @@ const controllers = [
 ] as const;
 
 const services = [
-  { value: "Stick drift", label: "Repair old joystick module — $25" },
-  { value: "Hall Effect upgrade", label: "Hall Effect upgrade — $40" },
-  { value: "Joystick replacement", label: "Joystick replacement" },
+  { value: "Hall Effect joystick", label: "Hall Effect joystick — $30" },
+  { value: "TMR joystick", label: "TMR joystick — $45" },
   { value: "Buttons", label: "Buttons" },
   { value: "Triggers / bumpers", label: "Triggers / bumpers" },
   { value: "USB-C / charging", label: "USB-C / charging" },
   { value: "Not sure", label: "Not sure yet" },
 ] as const;
+
+// Cloudflare's demo keys render a "for testing only" notice, so the widget only
+// shows once a real site key is configured.
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export function RepairForm() {
   const [serverError, setServerError] = useState("");
@@ -42,7 +45,7 @@ export function RepairForm() {
     resolver: zodResolver(repairRequestSchema),
     defaultValues: {
       controller: "Xbox Series X|S",
-      service: "Stick drift",
+      service: "Hall Effect joystick",
       fulfillment: "Drop off",
       turnstileToken: "",
     },
@@ -178,21 +181,20 @@ export function RepairForm() {
         </label>
       </div>
 
-      <div className="mt-3 overflow-hidden">
-        <Turnstile
-          sitekey={
-            process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ??
-            "1x00000000000000000000AA"
-          }
-          onVerify={(token) =>
-            setValue("turnstileToken", token, { shouldValidate: true })
-          }
-          onExpire={() => setValue("turnstileToken", "")}
-          theme="light"
-          size="flexible"
-        />
-        {errorText(errors.turnstileToken?.message)}
-      </div>
+      {turnstileSiteKey ? (
+        <div className="mt-3 overflow-hidden">
+          <Turnstile
+            sitekey={turnstileSiteKey}
+            onVerify={(token) =>
+              setValue("turnstileToken", token, { shouldValidate: true })
+            }
+            onExpire={() => setValue("turnstileToken", "")}
+            theme="light"
+            size="flexible"
+          />
+          {errorText(errors.turnstileToken?.message)}
+        </div>
+      ) : null}
 
       {serverError ? (
         <p

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Space_Grotesk } from "next/font/google";
+import { siteDescription, siteName, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geist = Geist({
@@ -12,10 +13,27 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+const title = `${siteName} — Xbox & PS5 Stick Drift Repair`;
+
 export const metadata: Metadata = {
-  title: "StickLab — Xbox & PS5 Controller Repair",
-  description:
-    "Expert controller repair and Hall Effect upgrades for Xbox and PlayStation 5 controllers.",
+  metadataBase: new URL(siteUrl),
+  title,
+  description: siteDescription,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName,
+    title,
+    description: siteDescription,
+    locale: "en_CA",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description: siteDescription,
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

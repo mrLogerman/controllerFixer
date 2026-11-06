@@ -12,9 +12,8 @@ export const repairRequestSchema = z.object({
     "PS5 DualSense Edge",
   ]),
   service: z.enum([
-    "Stick drift",
-    "Joystick replacement",
-    "Hall Effect upgrade",
+    "Hall Effect joystick",
+    "TMR joystick",
     "Buttons",
     "Triggers / bumpers",
     "USB-C / charging",
