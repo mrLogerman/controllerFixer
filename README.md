@@ -39,11 +39,12 @@ the customer. Both addresses live as `DEFAULT_RECIPIENT` and `DEFAULT_SENDER` at
 the top of `app/api/repair-request/route.ts`; the sender domain has to stay
 verified in Resend.
 
-## Adding the Hall Effect video
+## Adding the joystick videos
 
-Set `HALL_EFFECT_VIDEO_ID` in `components/landing-page.tsx` to the ID from the
-YouTube URL — for `https://www.youtube.com/watch?v=dQw4w9WgXcQ` that is
-`dQw4w9WgXcQ`. Until it is set, the section shows a "Video coming soon" block.
+Fill in `videoId` for each entry of the `joystickTypes` array in
+`components/landing-page.tsx`. The ID is the part of the YouTube URL after
+`v=` — for `https://www.youtube.com/watch?v=dQw4w9WgXcQ` that is
+`dQw4w9WgXcQ`. Any card left blank shows a "Video coming soon" block.
 
 ## Adding your own photos
 
