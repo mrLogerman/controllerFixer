@@ -26,9 +26,42 @@ import { testimonials } from "@/lib/testimonials";
 // Swap this number (1-6) to change the feedback card design site-wide.
 const FEEDBACK_CARD_VARIANT: FeedbackCardVariant = 3;
 
-// YouTube video ID for the Hall Effect explainer, e.g. "dQw4w9WgXcQ" from
-// https://www.youtube.com/watch?v=dQw4w9WgXcQ.
-const HALL_EFFECT_VIDEO_ID = "";
+const controllerFamilies = [
+  {
+    label: "Xbox",
+    models: ["Series X|S", "Xbox One", "Elite Series 1 & 2"],
+    dark: false,
+  },
+  {
+    label: "PlayStation 5",
+    models: ["DualSense", "DualSense Edge"],
+    dark: true,
+  },
+];
+
+// Each videoId is the ID from a YouTube URL — for
+// https://www.youtube.com/watch?v=dQw4w9WgXcQ that is "dQw4w9WgXcQ".
+// Until one is filled in, that card shows a "video coming soon" block.
+const joystickTypes = [
+  {
+    name: "Traditional",
+    tag: "Stock",
+    copy: "The module almost every controller ships with. A contact arm scrapes across a carbon track to measure movement, and that track slowly wears away. This is where stick drift comes from.",
+    videoId: "",
+  },
+  {
+    name: "Hall Effect",
+    tag: "Upgrade",
+    copy: "Measures a magnet instead of touching anything. With no contact there is no surface left to wear out, so these modules hold their accuracy for years rather than months.",
+    videoId: "",
+  },
+  {
+    name: "TMR",
+    tag: "Newest",
+    copy: "The latest magnetic sensor. Contactless like Hall Effect, but more sensitive and lighter on battery, so small stick movements register more precisely.",
+    videoId: "",
+  },
+];
 
 // Add an image path (e.g. "/gallery/xbox-series.jpg") to replace a placeholder.
 const gallery: { label: string; image?: string }[] = [
@@ -83,129 +116,6 @@ function SectionTitle({
   );
 }
 
-function ControllerVisual({
-  platform,
-  accent,
-}: {
-  platform: "xbox" | "ps5";
-  accent: string;
-}) {
-  return (
-    <div className="controller-orbit relative flex aspect-[5/4] items-center justify-center overflow-hidden rounded-[2rem] bg-[#11120f] grid-noise">
-      <div
-        className="absolute left-[13%] top-[12%] size-36 rounded-full opacity-25 blur-3xl"
-        style={{ background: accent }}
-      />
-      <motion.div
-        initial={{ rotate: -7, scale: 0.9 }}
-        whileInView={{ rotate: 3, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ type: "spring", stiffness: 90, damping: 15 }}
-        className="relative z-10"
-      >
-        <Gamepad2
-          aria-hidden
-          strokeWidth={1.15}
-          className="h-40 w-56 text-white sm:h-52 sm:w-72"
-        />
-        <span
-          className="absolute left-[33%] top-[42%] size-4 rounded-full shadow-[0_0_22px_currentColor]"
-          style={{ color: accent, background: accent }}
-        />
-        <span
-          className="absolute right-[27%] top-[36%] size-3 rounded-full"
-          style={{ background: platform === "xbox" ? "#b6ff2e" : "#7c5cff" }}
-        />
-      </motion.div>
-      <div className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.13em] text-white/65 backdrop-blur-sm">
-        <span
-          className="size-1.5 rounded-full shadow-[0_0_10px_currentColor]"
-          style={{ color: accent, background: accent }}
-        />
-        Bench tested
-      </div>
-    </div>
-  );
-}
-
-function PlatformSection({
-  id,
-  platform,
-  title,
-  copy,
-  services,
-  reverse = false,
-}: {
-  id: string;
-  platform: "xbox" | "ps5";
-  title: string;
-  copy: string;
-  services: string[];
-  reverse?: boolean;
-}) {
-  const isXbox = platform === "xbox";
-  const accent = platform === "xbox" ? "#b6ff2e" : "#7c5cff";
-
-  return (
-    <section
-      id={id}
-      className={`scroll-mt-20 ${
-        isXbox ? "bg-[#e7f6da] py-14 sm:py-20" : "py-12 sm:py-16"
-      }`}
-    >
-      <div
-        className={`page-shell grid items-center gap-10 lg:grid-cols-2 ${
-          isXbox
-            ? "lg:gap-20"
-            : "rounded-[2.5rem] bg-[#7256ec] p-6 text-white sm:p-10 lg:gap-14 lg:p-14"
-        } ${
-          reverse ? "lg:[&>*:first-child]:order-2" : ""
-        }`}
-      >
-        <ControllerVisual platform={platform} accent={accent} />
-        <motion.div {...fadeUp}>
-          <span className={`eyebrow ${isXbox ? "" : "text-white/60"}`}>
-            {platform === "xbox" ? "Xbox repair" : "PlayStation 5 repair"}
-          </span>
-          <h2 className="font-display mt-4 text-4xl font-semibold leading-[1.04] tracking-[-0.04em] sm:text-5xl">
-            {title}
-          </h2>
-          <p
-            className={`mt-5 max-w-xl text-base leading-7 ${
-              isXbox ? "text-[#5e6259]" : "text-white/65"
-            }`}
-          >
-            {copy}
-          </p>
-          <ul className="mt-7 grid gap-3 sm:grid-cols-2">
-            {services.map((service) => (
-              <li
-                key={service}
-                className="flex items-center gap-2.5 text-sm font-semibold"
-              >
-                <span
-                  className={`flex size-6 items-center justify-center rounded-full ${
-                    isXbox ? "bg-[#b6ff2e]" : "bg-white text-[#7256ec]"
-                  }`}
-                >
-                  <Check className="size-3.5" strokeWidth={3} />
-                </span>
-                {service}
-              </li>
-            ))}
-          </ul>
-          <Button asChild variant={isXbox ? "dark" : "default"} className="mt-8">
-            <a href="#contact">
-              Repair my {platform === "xbox" ? "Xbox" : "PS5"} controller
-              <ArrowRight className="size-4" />
-            </a>
-          </Button>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
 export function LandingPage() {
   return (
     <main className="overflow-hidden">
@@ -218,11 +128,11 @@ export function LandingPage() {
             aria-label="Main navigation"
             className="hidden items-center gap-7 text-sm font-semibold text-white/70 md:flex"
           >
-            <a className="transition-colors hover:text-white" href="#xbox">
-              Xbox Repair
+            <a className="transition-colors hover:text-white" href="#controllers">
+              Controllers
             </a>
-            <a className="transition-colors hover:text-white" href="#ps5">
-              PS5 Repair
+            <a className="transition-colors hover:text-white" href="#joysticks">
+              Joystick Types
             </a>
             <a className="transition-colors hover:text-white" href="#choose">
               Repair Options
@@ -344,32 +254,54 @@ export function LandingPage() {
         </div>
       </section>
 
-      <PlatformSection
-        id="xbox"
-        platform="xbox"
-        title="Your Xbox controller, dialed in."
-        copy="From everyday Series controllers to Elite models, we diagnose the fault, replace only what’s needed, and calibrate every input before it leaves our bench."
-        services={[
-          "Series X|S controllers",
-          "Xbox One controllers",
-          "Elite Series 1 & 2",
-          "Hall Effect upgrades",
-        ]}
-      />
-
-      <PlatformSection
-        id="ps5"
-        platform="ps5"
-        title="DualSense, without the dead zones."
-        copy="Keep the haptics and feel you love. We fix drift, charging issues, buttons, and triggers on DualSense and DualSense Edge controllers."
-        services={[
-          "DualSense controllers",
-          "DualSense Edge",
-          "Adaptive triggers",
-          "USB-C charging",
-        ]}
-        reverse
-      />
+      <section id="controllers" className="scroll-mt-20 py-16 sm:py-20">
+        <div className="page-shell">
+          <SectionTitle
+            eyebrow="Controllers we fix"
+            title="Xbox and PlayStation, same bench."
+            copy="Drift, buttons, triggers, charging ports — we find the fault, replace only what needs replacing, and calibrate every input before it goes back in your hands."
+          />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {controllerFamilies.map(({ label, models, dark }, index) => (
+              <motion.div
+                key={label}
+                {...fadeUp}
+                transition={{ duration: 0.45, delay: index * 0.06 }}
+                className={`rounded-[2rem] p-7 sm:p-8 ${
+                  dark ? "bg-[#7256ec] text-white" : "bg-[#e7f6da]"
+                }`}
+              >
+                <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+                  {label}
+                </h3>
+                <ul className="mt-5 flex flex-wrap gap-2">
+                  {models.map((model) => (
+                    <li
+                      key={model}
+                      className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${
+                        dark ? "bg-white/15" : "bg-white"
+                      }`}
+                    >
+                      <Check
+                        className={`size-3.5 ${dark ? "" : "text-[#55893a]"}`}
+                        strokeWidth={3}
+                      />
+                      {model}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div {...fadeUp} className="mt-8">
+            <Button asChild variant="dark">
+              <a href="#contact">
+                Book a repair <ArrowRight className="size-4" />
+              </a>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
 
       <section className="overflow-hidden border-y border-[#d9dad4] bg-[#b6ff2e] py-7">
         <p className="sr-only">
@@ -392,35 +324,33 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section id="hall-effect" className="scroll-mt-20 py-20 sm:py-24">
-        <div className="page-shell grid items-center gap-10 lg:grid-cols-[1fr_1.1fr]">
-          <motion.div {...fadeUp}>
-            <span className="eyebrow">The technology</span>
-            <h2 className="font-display mt-4 text-4xl font-semibold leading-[1.04] tracking-[-0.04em] sm:text-5xl">
-              What is a Hall Effect joystick?
-            </h2>
-            <p className="mt-5 text-base leading-7 text-[#686b64]">
-              A stock joystick works by dragging a tiny contact across a carbon
-              strip. That strip wears down with every match, the readings get
-              noisy, and the controller starts reading movement you never made.
-              That is stick drift.
-            </p>
-            <p className="mt-4 text-base leading-7 text-[#686b64]">
-              A Hall Effect joystick measures a magnetic field instead. Nothing
-              inside it rubs against anything, so there is no surface left to
-              wear out — which is why these modules keep their accuracy for
-              years instead of months.
-            </p>
-            <p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-[#777a73]">
-              No contact · No wear · No drift
-            </p>
-          </motion.div>
-          <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.08 }}>
-            <YouTubeEmbed
-              videoId={HALL_EFFECT_VIDEO_ID}
-              title="What is a Hall Effect joystick?"
-            />
-          </motion.div>
+      <section id="joysticks" className="scroll-mt-20 py-16 sm:py-20">
+        <div className="page-shell">
+          <SectionTitle
+            eyebrow="The technology"
+            title="Three kinds of joystick."
+            copy="Every controller uses one of these three modules. The difference is what happens inside when you move the stick."
+          />
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {joystickTypes.map(({ name, tag, copy, videoId }, index) => (
+              <motion.article
+                key={name}
+                {...fadeUp}
+                transition={{ duration: 0.45, delay: index * 0.07 }}
+              >
+                <YouTubeEmbed videoId={videoId} title={`${name} joysticks`} />
+                <div className="mt-5 flex items-center gap-3">
+                  <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+                    {name}
+                  </h3>
+                  <span className="rounded-full bg-[#e4e5df] px-2.5 py-1 text-[0.6rem] font-extrabold uppercase tracking-[0.12em] text-[#6c6f67]">
+                    {tag}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#686b64]">{copy}</p>
+              </motion.article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -618,11 +548,11 @@ export function LandingPage() {
             <Logo />
           </a>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-[#6e706a]">
-            <a className="hover:text-black" href="#xbox">
-              Xbox Repair
+            <a className="hover:text-black" href="#controllers">
+              Controllers
             </a>
-            <a className="hover:text-black" href="#ps5">
-              PS5 Repair
+            <a className="hover:text-black" href="#joysticks">
+              Joystick Types
             </a>
             <a className="hover:text-black" href="#choose">
               Repair Options
