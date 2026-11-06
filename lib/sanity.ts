@@ -5,7 +5,7 @@ import {
 } from "@/lib/joysticks";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
 const apiVersion = "2024-10-01";
 
 export const sanityConfigured = Boolean(projectId);
