@@ -3,7 +3,7 @@ import { fetchSiteContent, type SiteContent } from "@/lib/sanity";
 
 export const revalidate = 60;
 
-const empty: SiteContent = { feedback: [], videos: [] };
+const empty: SiteContent = { feedback: [], videos: [], gallery: [] };
 
 export default async function Home() {
   // A Sanity hiccup should never take the marketing page down.

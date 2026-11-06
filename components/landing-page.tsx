@@ -149,7 +149,7 @@ function CategoryVideos({
 }
 
 export function LandingPage({
-  content = { feedback: [], videos: [] },
+  content = { feedback: [], videos: [], gallery: [] },
 }: {
   content?: SiteContent;
 } = {}) {
@@ -521,9 +521,20 @@ export function LandingPage({
             </span>
           </div>
           <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3">
-            {gallery.map(({ label, image }, index) => (
+            {(content.gallery.length > 0
+              ? content.gallery.map((shot) => ({
+                  key: shot.id,
+                  label: "Repaired controller",
+                  image: shot.url,
+                }))
+              : gallery.map((shot) => ({
+                  key: shot.label,
+                  label: shot.label,
+                  image: shot.image,
+                }))
+            ).map(({ key, label, image }, index) => (
               <motion.div
-                key={label}
+                key={key}
                 {...fadeUp}
                 transition={{ duration: 0.4, delay: index * 0.04 }}
                 className="relative flex min-h-32 items-center justify-center overflow-hidden rounded-2xl border border-[#d8d9d3] bg-[#e9eae5] p-4 text-center transition-transform duration-300 hover:scale-[1.025] sm:min-h-44"

@@ -6,7 +6,7 @@ export const ADMIN_COOKIE = "vcr_admin";
 const SESSION_MS = 1000 * 60 * 60 * 12;
 
 export function adminPassword() {
-  return process.env.ADMIN_PASSWORD ?? "admin";
+  return process.env.ADMIN_PASSWORD?.trim() ?? "";
 }
 
 function signingSecret() {
@@ -24,7 +24,9 @@ function safeEqual(a: string, b: string) {
 }
 
 export function passwordMatches(candidate: string) {
-  return safeEqual(candidate, adminPassword());
+  const expected = adminPassword();
+  if (!expected || !candidate) return false;
+  return safeEqual(candidate, expected);
 }
 
 export function createSessionToken() {
