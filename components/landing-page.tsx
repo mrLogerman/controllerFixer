@@ -33,11 +33,15 @@ const controllerFamilies = [
     label: "Xbox",
     models: ["Series X|S", "Xbox One", "Elite Series 1 & 2"],
     dark: false,
+    image: "/options/xbox.jpg",
+    imageAlt: "Xbox controller",
   },
   {
     label: "PlayStation 5",
     models: ["DualSense", "DualSense Edge"],
     dark: true,
+    image: "/options/ps5.jpg",
+    imageAlt: "PlayStation 5 DualSense controller",
   },
 ];
 
@@ -308,7 +312,8 @@ export function LandingPage({
             copy="Drift, buttons, triggers, charging ports — we find the fault, replace only what needs replacing, and calibrate every input before it goes back in your hands."
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {controllerFamilies.map(({ label, models, dark }, index) => (
+            {controllerFamilies.map(
+              ({ label, models, dark, image, imageAlt }, index) => (
               <motion.div
                 key={label}
                 {...fadeUp}
@@ -317,9 +322,18 @@ export function LandingPage({
                   dark ? "bg-[#7256ec] text-white" : "bg-[#e7f6da]"
                 }`}
               >
-                <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
-                  {label}
-                </h3>
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+                    {label}
+                  </h3>
+                  <Image
+                    src={image}
+                    alt={imageAlt}
+                    width={96}
+                    height={96}
+                    className="size-16 shrink-0 rounded-2xl object-cover shadow-sm sm:size-20"
+                  />
+                </div>
                 <ul className="mt-5 flex flex-wrap gap-2">
                   {models.map((model) => (
                     <li
@@ -374,7 +388,7 @@ export function LandingPage({
         <div className="page-shell">
           <SectionTitle
             eyebrow="The technology"
-            title="Three kinds of joystick."
+            title="3 Joystick Types. Which One Wins?"
             copy="Every controller uses one of these three modules. The difference is what happens inside when you move the stick."
           />
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
@@ -432,18 +446,27 @@ export function LandingPage({
                   <span className="size-2 rounded-full bg-white" />
                   Red pill
                 </span>
-                <div className="mt-6 flex items-end justify-between gap-4">
-                  <div className="min-w-0">
-                    <h3 className="font-display text-3xl font-semibold tracking-[-0.04em]">
-                      Hall Effect
-                    </h3>
+                <div className="mt-6 flex items-center gap-4">
+                  <Image
+                    src="/options/hall-effect.jpg"
+                    alt="Hall Effect joystick module"
+                    width={80}
+                    height={80}
+                    className="size-14 shrink-0 rounded-2xl object-cover ring-1 ring-white/15 sm:size-[4.5rem]"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-end justify-between gap-3">
+                      <h3 className="font-display text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
+                        Hall Effect
+                      </h3>
+                      <p className="font-display shrink-0 text-4xl font-semibold leading-none tracking-[-0.06em] text-[#ff7175] sm:text-6xl">
+                        $30
+                      </p>
+                    </div>
                     <p className="mt-2 text-sm text-white/55">
                       The proven fix for stick drift
                     </p>
                   </div>
-                  <p className="font-display shrink-0 text-5xl font-semibold leading-none tracking-[-0.06em] text-[#ff7175] sm:text-6xl">
-                    $30
-                  </p>
                 </div>
               </div>
             </motion.article>
@@ -458,18 +481,27 @@ export function LandingPage({
                   <span className="size-2 rounded-full bg-white" />
                   Blue pill
                 </span>
-                <div className="mt-6 flex items-end justify-between gap-4">
-                  <div className="min-w-0">
-                    <h3 className="font-display text-3xl font-semibold tracking-[-0.04em]">
-                      TMR
-                    </h3>
+                <div className="mt-6 flex items-center gap-4">
+                  <Image
+                    src="/options/tmr.jpg"
+                    alt="TMR joystick module"
+                    width={80}
+                    height={80}
+                    className="size-14 shrink-0 rounded-2xl object-cover ring-1 ring-white/15 sm:size-[4.5rem]"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-end justify-between gap-3">
+                      <h3 className="font-display text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
+                        TMR
+                      </h3>
+                      <p className="font-display shrink-0 text-4xl font-semibold leading-none tracking-[-0.06em] text-[#8da0ff] sm:text-6xl">
+                        $45
+                      </p>
+                    </div>
                     <p className="mt-2 text-sm text-white/55">
                       Newest sensor, highest precision
                     </p>
                   </div>
-                  <p className="font-display shrink-0 text-5xl font-semibold leading-none tracking-[-0.06em] text-[#8da0ff] sm:text-6xl">
-                    $45
-                  </p>
                 </div>
               </div>
             </motion.article>
@@ -576,7 +608,7 @@ export function LandingPage({
             <div className="relative min-h-[360px] overflow-hidden bg-[#171815] lg:min-h-full">
               <iframe
                 title="Vancouver Controller Repair service area"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=-123.18%2C49.24%2C-123.04%2C49.30&layer=mapnik&marker=49.2827%2C-123.1207"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-123.069617%2C49.229707%2C-123.029617%2C49.257707&layer=mapnik&marker=49.247907%2C-123.049617"
                 className="absolute inset-0 h-full w-full border-0 opacity-85 grayscale-[0.25]"
                 loading="lazy"
               />
