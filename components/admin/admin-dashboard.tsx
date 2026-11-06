@@ -16,7 +16,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
 import { joystickTypes, type JoystickKey } from "@/lib/joysticks";
-import type { SiteContent, StoredFeedback, StoredVideo } from "@/lib/sanity";
+import type {
+  SiteContent,
+  StoredFeedback,
+  StoredGalleryImage,
+  StoredVideo,
+} from "@/lib/sanity";
 
 type Status = { tone: "ok" | "error"; message: string } | null;
 
@@ -529,6 +534,147 @@ function CategoryPanel({
   );
 }
 
+function GalleryPanel({
+  images,
+  onChange,
+}: {
+  images: StoredGalleryImage[];
+  onChange: () => void;
+}) {
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    return () => previews.forEach((url) => URL.revokeObjectURL(url));
+  }, [previews]);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setStatus(null);
+
+    const response = await fetch("/api/admin/gallery", {
+      method: "POST",
+      body: new FormData(event.currentTarget),
+    });
+    const result = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+
+    setBusy(false);
+
+    if (!response.ok) {
+      setStatus({ tone: "error", message: result?.error ?? "Could not upload." });
+      return;
+    }
+
+    formRef.current?.reset();
+    setPreviews([]);
+    setStatus({ tone: "ok", message: "Photos added to the gallery." });
+    onChange();
+  }
+
+  async function remove(id: string) {
+    setPending(id);
+    setStatus(null);
+    const response = await fetch(`/api/admin/gallery?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    setPending(null);
+    if (!response.ok) {
+      const result = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      setStatus({ tone: "error", message: result?.error ?? "Could not delete." });
+      return;
+    }
+    onChange();
+  }
+
+  return (
+    <section className="mt-6 rounded-[2rem] bg-white p-5 sm:p-7">
+      <h2 className="font-display text-2xl font-semibold tracking-[-0.03em]">
+        Controllers we’ve brought back
+      </h2>
+      <p className="mt-1 text-sm text-[#73756f]">
+        These photos fill the gallery on the home page.
+      </p>
+      <form ref={formRef} onSubmit={onSubmit} className="mt-5 rounded-3xl bg-[#f7f7f4] p-5">
+        <label className="block">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.1em] text-[#5f615b]">
+            Photos
+          </span>
+          <input
+            name="images"
+            type="file"
+            accept="image/*"
+            multiple
+            required
+            className="field py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-[#11120f] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white"
+            onChange={(event) => {
+              const files = [...(event.target.files ?? [])];
+              setPreviews(files.map((file) => URL.createObjectURL(file)));
+            }}
+          />
+        </label>
+        {previews.length > 0 ? (
+          <div className="mt-3 flex gap-2 overflow-x-auto">
+            {previews.map((src) => (
+              <div
+                key={src}
+                className="relative h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-[#e4e5df]"
+              >
+                <Image unoptimized src={src} alt="" fill className="object-cover" />
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <Banner status={status} />
+        <Button type="submit" className="mt-5" disabled={busy}>
+          {busy ? (
+            <LoaderCircle className="size-4 animate-spin" />
+          ) : (
+            <Upload className="size-4" />
+          )}
+          {busy ? "Uploading..." : "Add photos"}
+        </Button>
+      </form>
+      {images.length === 0 ? (
+        <p className="mt-4 text-sm text-[#73756f]">
+          No gallery photos yet. The home page keeps its placeholders until you add some.
+        </p>
+      ) : (
+        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {images.map((image) => (
+            <li
+              key={image.id}
+              className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#e4e5df]"
+            >
+              <Image src={image.url} alt="" fill sizes="240px" className="object-cover" />
+              <button
+                type="button"
+                aria-label="Delete gallery photo"
+                disabled={pending === image.id}
+                onClick={() => remove(image.id)}
+                className="absolute right-2 top-2 rounded-full bg-white/90 p-2 text-[#11120f] hover:bg-red-50 hover:text-red-600"
+              >
+                {pending === image.id ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export function AdminDashboard({
   content,
   sanityReady,
@@ -575,6 +721,11 @@ export function AdminDashboard({
 
         <FeedbackPanel
           feedback={content.feedback}
+          onChange={() => router.refresh()}
+        />
+
+        <GalleryPanel
+          images={content.gallery}
           onChange={() => router.refresh()}
         />
 

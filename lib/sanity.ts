@@ -58,12 +58,19 @@ export type StoredVideo = {
   createdAt: string;
 };
 
+export type StoredGalleryImage = {
+  id: string;
+  url: string;
+  createdAt: string;
+};
+
 export type SiteContent = {
   feedback: StoredFeedback[];
   videos: StoredVideo[];
+  gallery: StoredGalleryImage[];
 };
 
-const EMPTY: SiteContent = { feedback: [], videos: [] };
+const EMPTY: SiteContent = { feedback: [], videos: [], gallery: [] };
 
 function sized(url: string | null | undefined, width: number) {
   if (!url) return null;
@@ -76,6 +83,7 @@ export async function fetchSiteContent(): Promise<SiteContent> {
   const data = await client(false).fetch<{
     feedback: Array<Omit<StoredFeedback, "images"> & { images: (string | null)[] }>;
     videos: StoredVideo[];
+    gallery: Array<{ id: string; url: string | null; createdAt: string }>;
   }>(
     `{
       "feedback": *[_type == "testimonial"] | order(_createdAt desc) {
@@ -91,6 +99,11 @@ export async function fetchSiteContent(): Promise<SiteContent> {
         url,
         title,
         category,
+        "createdAt": _createdAt
+      },
+      "gallery": *[_type == "galleryImage" && defined(image)] | order(_createdAt desc) {
+        "id": _id,
+        "url": image.asset->url,
         "createdAt": _createdAt
       }
     }`,
@@ -111,5 +124,8 @@ export async function fetchSiteContent(): Promise<SiteContent> {
     videos: (data?.videos ?? []).filter(
       (row) => row.url && isJoystickKey(row.category),
     ),
+    gallery: (data?.gallery ?? [])
+      .map((row) => ({ ...row, url: sized(row.url, 1600) }))
+      .filter((row): row is StoredGalleryImage => Boolean(row.url)),
   };
 }

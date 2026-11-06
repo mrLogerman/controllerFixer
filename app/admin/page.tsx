@@ -19,6 +19,7 @@ export default async function AdminPage() {
   const content = await fetchSiteContent().catch(() => ({
     feedback: [],
     videos: [],
+    gallery: [],
   }));
 
   return <AdminDashboard content={content} sanityReady={sanityWritable} />;
