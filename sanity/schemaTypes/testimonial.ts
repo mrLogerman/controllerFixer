@@ -20,6 +20,25 @@ export const testimonial = {
     },
     { name: "repair", title: "Repair", type: "string" },
     {
+      name: "rating",
+      title: "Star rating",
+      type: "number",
+      validation: (rule: { min: (value: number) => { max: (value: number) => unknown } }) =>
+        rule.min(1).max(5),
+    },
+    {
+      name: "status",
+      title: "Status",
+      type: "string",
+      description: "Blank or approved reviews are public. Pending reviews stay off the site.",
+      options: {
+        list: [
+          { title: "Pending", value: "pending" },
+          { title: "Approved", value: "approved" },
+        ],
+      },
+    },
+    {
       name: "images",
       title: "Photos",
       type: "array",

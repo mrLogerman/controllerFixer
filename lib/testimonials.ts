@@ -2,6 +2,7 @@ export type Testimonial = {
   quote: string;
   name: string;
   repair: string;
+  rating?: number;
   // Drop a file in /public/feedback and point here, e.g. "/feedback/marcus.jpg".
   image?: string;
 };

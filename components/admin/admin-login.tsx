@@ -46,7 +46,7 @@ export function AdminLogin() {
           Staff sign in
         </h1>
         <p className="mt-2 text-sm text-[#73756f]">
-          This page manages customer feedback and joystick videos.
+          This page manages feedback links, reviews, and joystick videos.
         </p>
 
         <label className="mt-6 block">

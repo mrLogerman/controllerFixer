@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { AdminLogin } from "@/components/admin/admin-login";
 import { isSignedIn } from "@/lib/admin-auth";
+import { listFeedbackRequests } from "@/lib/feedback-requests";
 import { fetchSiteContent, sanityWritable } from "@/lib/sanity";
+import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Site content",
@@ -21,6 +23,14 @@ export default async function AdminPage() {
     videos: [],
     gallery: [],
   }));
+  const requests = await listFeedbackRequests().catch(() => []);
 
-  return <AdminDashboard content={content} sanityReady={sanityWritable} />;
+  return (
+    <AdminDashboard
+      content={content}
+      requests={requests}
+      siteUrl={siteUrl}
+      sanityReady={sanityWritable}
+    />
+  );
 }

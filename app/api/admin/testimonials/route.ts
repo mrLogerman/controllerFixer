@@ -1,12 +1,10 @@
-import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireSanity, requireSignIn } from "@/lib/admin-api";
+import { deleteRequestForTestimonial } from "@/lib/feedback-requests";
+import { uploadFormImages } from "@/lib/sanity-images";
 import { writeClient } from "@/lib/sanity";
-
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_IMAGES = 8;
 
 const fields = z.object({
   quote: z.string().trim().min(10, "Feedback needs at least 10 characters").max(800),
@@ -14,47 +12,8 @@ const fields = z.object({
   repair: z.string().trim().max(80).optional(),
 });
 
-type ImageAsset = {
-  _type: "image";
-  _key: string;
-  asset: { _type: "reference"; _ref: string };
-};
-
 async function readImages(form: FormData) {
-  const files = form
-    .getAll("images")
-    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-
-  if (files.length > MAX_IMAGES) {
-    return { error: `Upload ${MAX_IMAGES} photos at a time.` };
-  }
-
-  for (const file of files) {
-    if (!file.type.startsWith("image/")) {
-      return { error: "Every file needs to be an image." };
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      return { error: "Each photo needs to be under 8 MB." };
-    }
-  }
-
-  const client = writeClient();
-  const images: ImageAsset[] = [];
-
-  for (const file of files) {
-    const asset = await client.assets.upload(
-      "image",
-      Buffer.from(await file.arrayBuffer()),
-      { filename: file.name, contentType: file.type },
-    );
-    images.push({
-      _type: "image",
-      _key: randomUUID(),
-      asset: { _type: "reference", _ref: asset._id },
-    });
-  }
-
-  return { images };
+  return uploadFormImages(form);
 }
 
 function readFields(form: FormData) {
@@ -174,6 +133,9 @@ export async function DELETE(request: Request) {
 
   try {
     await writeClient().delete(id);
+    await deleteRequestForTestimonial(id).catch((error) => {
+      console.error("Could not remove the feedback link for that review:", error);
+    });
     revalidatePath("/");
     return NextResponse.json({ ok: true });
   } catch (error) {
