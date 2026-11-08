@@ -163,6 +163,7 @@ export function LandingPage({
           quote: item.quote,
           name: item.name,
           repair: item.repair ?? "",
+          rating: item.rating,
           image: item.images[0],
         }))
       : fallbackTestimonials;
