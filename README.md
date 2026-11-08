@@ -44,6 +44,19 @@ variable is set.
 
 Feedback is one form: a quote, a name, and photos. It is not tied to a joystick
 type, and published entries replace the sample quotes in the feedback carousel.
+Reviews added here are public immediately. Reviews that arrive through a
+personal feedback link stay hidden until you approve them.
+
+### Personal feedback links
+
+The same admin page can create a private link for one customer:
+`/feedback/` plus a random token. Enter their name, controller, repair, date,
+and an optional note, then copy the link. The customer sees those details and
+only adds a star rating, a review, and optional photos. Each link accepts one
+submission, expires after 90 days if it is unused, and can be turned off or
+replaced. Approve the review to publish it on the site, or delete it. These
+invites are stored as Sanity drafts so the public dataset does not list the
+links or the customer details.
 Video links stay on Traditional, Hall Effect, and TMR, and show on the matching
 card. A joystick with no video keeps its “Video coming soon” block. Photos added
 under “Controllers we’ve brought back” replace the gallery placeholders.

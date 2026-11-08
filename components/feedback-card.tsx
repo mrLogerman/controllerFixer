@@ -50,14 +50,18 @@ function Photo({
   );
 }
 
-function Stars({ className }: { className?: string }) {
+function Stars({ className, rating }: { className?: string; rating?: number }) {
+  const value = rating && rating >= 1 && rating <= 5 ? Math.round(rating) : 5;
   return (
     <div
       className={cn("flex gap-1 text-[#7c5cff]", className)}
-      aria-label="5 out of 5 stars"
+      aria-label={`${value} out of 5 stars`}
     >
       {Array.from({ length: 5 }).map((_, star) => (
-        <Star key={star} className="size-4 fill-current" />
+        <Star
+          key={star}
+          className={`size-4 ${star < value ? "fill-current" : "fill-none"}`}
+        />
       ))}
     </div>
   );
@@ -80,7 +84,7 @@ function AvatarTop({ testimonial }: { testimonial: Testimonial }) {
           <p className="mt-1 text-xs text-[#777a73]">{testimonial.repair}</p>
         </div>
       </div>
-      <Stars className="mt-6" />
+      <Stars rating={testimonial.rating} className="mt-6" />
       <blockquote className={cn(quoteText, "mt-4 text-xl leading-8")}>
         “{testimonial.quote}”
       </blockquote>
@@ -93,7 +97,7 @@ function PhotoLeft({ testimonial }: { testimonial: Testimonial }) {
     <figure className={cn(shell, "flex")}>
       <Photo testimonial={testimonial} className="w-2/5" />
       <div className="flex flex-1 flex-col p-6">
-        <Stars />
+        <Stars rating={testimonial.rating} />
         <blockquote className={cn(quoteText, "mt-4 text-lg leading-7")}>
           “{testimonial.quote}”
         </blockquote>
@@ -111,7 +115,7 @@ function PhotoBanner({ testimonial }: { testimonial: Testimonial }) {
     <figure className={cn(shell, "flex flex-col")}>
       <Photo testimonial={testimonial} className="h-44 w-full" />
       <div className="flex flex-1 flex-col p-7">
-        <Stars />
+        <Stars rating={testimonial.rating} />
         <blockquote className={cn(quoteText, "mt-4 text-xl leading-8")}>
           “{testimonial.quote}”
         </blockquote>
@@ -143,7 +147,7 @@ function PhotoOverlay({ testimonial }: { testimonial: Testimonial }) {
             <p className="text-sm font-bold">{testimonial.name}</p>
             <p className="mt-1 text-xs text-white/55">{testimonial.repair}</p>
           </div>
-          <Stars className="text-[#b6ff2e]" />
+          <Stars rating={testimonial.rating} className="text-[#b6ff2e]" />
         </figcaption>
       </div>
     </figure>
@@ -154,7 +158,7 @@ function PhotoFooter({ testimonial }: { testimonial: Testimonial }) {
   return (
     <figure className={cn(shell, "flex flex-col")}>
       <div className="p-7">
-        <Stars />
+        <Stars rating={testimonial.rating} />
         <blockquote className={cn(quoteText, "mt-4 text-xl leading-8")}>
           “{testimonial.quote}”
         </blockquote>
@@ -179,7 +183,7 @@ function PhotoThumb({ testimonial }: { testimonial: Testimonial }) {
   return (
     <figure className={cn(shell, "flex flex-col p-7")}>
       <div className="flex items-start justify-between gap-4">
-        <Stars />
+        <Stars rating={testimonial.rating} />
         <span className="rounded-full bg-[#b6ff2e] px-2.5 py-1 text-[0.6rem] font-extrabold uppercase tracking-[0.12em]">
           Verified fix
         </span>

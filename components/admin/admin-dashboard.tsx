@@ -13,9 +13,11 @@ import {
   Upload,
   Video,
 } from "lucide-react";
+import { FeedbackRequestsPanel } from "@/components/admin/feedback-requests-panel";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
 import { joystickTypes, type JoystickKey } from "@/lib/joysticks";
+import type { FeedbackRequestSummary } from "@/lib/feedback-requests";
 import type {
   SiteContent,
   StoredFeedback,
@@ -393,6 +395,7 @@ function FeedbackPanel({
                 </p>
                 <p className="text-xs text-[#9a9c95]">
                   {when(item.createdAt)}
+                  {item.rating ? ` · ${item.rating}/5` : ""}
                   {item.images.length > 1 ? ` · ${item.images.length} photos` : ""}
                 </p>
               </div>
@@ -677,9 +680,13 @@ function GalleryPanel({
 
 export function AdminDashboard({
   content,
+  requests,
+  siteUrl,
   sanityReady,
 }: {
   content: SiteContent;
+  requests: FeedbackRequestSummary[];
+  siteUrl: string;
   sanityReady: boolean;
 }) {
   const router = useRouter();
@@ -700,7 +707,7 @@ export function AdminDashboard({
                 Site content
               </h1>
               <p className="text-xs text-[#73756f]">
-                Feedback on its own. Videos stay with each joystick type.
+                Personal feedback links, published reviews, and joystick videos.
               </p>
             </div>
           </div>
@@ -718,6 +725,12 @@ export function AdminDashboard({
             live in <code>sanity/schemaTypes</code>.
           </p>
         ) : null}
+
+        <FeedbackRequestsPanel
+          requests={requests}
+          siteUrl={siteUrl}
+          onChange={() => router.refresh()}
+        />
 
         <FeedbackPanel
           feedback={content.feedback}
