@@ -163,6 +163,7 @@ body {
   }
 
   .marquee-track {
+    animation: none;
     transform: none;
   }
 }
